@@ -1,0 +1,260 @@
+<template>
+  <!-- template里只能有一个根节点 -->
+  <div class="demo-page">
+    <div class="demo-header">
+      <div class="logo"><img src="../Common/logoo.png" alt=""></div>
+      <div class="nav">
+        <div class="list">
+          <div class="list-item {{navIndex == index ? 'list-item-active' : ''}}" for="(index,item) in nav" onclick="chocieNav(index)"><text>{{item}}</text></div>
+        </div>
+      </div>
+      <div class="user-info"><img src="../Common/个人.png" alt=""></div>
+    </div>
+    <div class="search">
+      <div class="location"><text>北京</text><img src="../Common/下拉.png" alt=""></div>
+      <div class="search-input"><img src="../Common/放大镜.png" alt=""><text>影片/影院/影人，任你搜</text></div>
+    </div>z
+    <div class="movie-content">
+      <div class="movie-title">
+        <text>正则热映（{{movieList.length}}部）</text>
+      </div>
+      <swiper indicator='false'>
+        <list>
+          <list-item for="(index,item) in movieListOne">
+            <img src="{{item.img}}" alt="">
+            <text lines='2'>{{item.t}}</text>
+          </list-item>
+        </list>
+      </swiper>
+      <swiper indicator='false'>
+        <list>
+          <list-item for="(index,item) in movieListTwo">
+            <img src="{{item.img}}" alt="">
+            <text lines='2'>{{item.t}}</text>
+          </list-item>
+        </list>
+      </swiper>
+      <!-- <swiper></swiper> -->
+    </div>
+    <div class="movie-content">
+      <div class="movie-title">
+        <text>即将上映（{{movieResult.totalComingMovie}}部）</text>
+      </div>
+    </div>
+    <swiper class="banner">
+      <list>
+        <list-item for="(index,item) in bannerResult.topPosters">
+          <img src="{{item.img}}" alt="">
+        </list-item>
+      </list>
+    </swiper>
+  </div>
+</template>
+
+
+<script>
+import router from '@system.router'
+import fetch from '@system.fetch'
+import prompt from '@system.prompt'
+export default {
+  // 页面级组件的数据模型，影响传入数据的覆盖机制：private内定义的属性不允许被覆盖
+  data: {
+    nav: ['首页', '购票', '商城', '发现'],
+    navIndex: 0,
+    movieList: [],
+    movieListOne: [],
+    movieListTwo: [],
+    movieResult: {},
+    bannerResult: {}
+  },
+  onShow() {
+    prompt.showToast({
+      message: '111'
+    })
+    this.getList();
+  },
+  getList() {
+    let _this = this;
+    fetch.fetch({
+      url: 'http://m.mtime.cn/Service/callback.mi/PageSubArea/GetFirstPageAdvAndNews.api?t=201943018242640779',
+      responseType: 'json',
+      success: function (response) {
+        _this.bannerResult = response.data
+
+      },
+      fail: function (err, code) {
+
+      }
+    })
+
+    fetch.fetch({
+      url: 'http://m.mtime.cn/Service/callback.mi/Showtime/LocationMovies.api?locationId=290&t=201943015221278462',
+      responseType: 'json',
+      success: function (response) {
+        _this.movieList = response.data.ms
+        _this.movieResult = response.data
+        _this.movieListOne = _this.movieList.slice(0, 20);
+        _this.movieListTwo = _this.movieList.slice(20);
+
+        fetch.fetch({
+          url: 'https://m.mtime.cn/Service/callback.mi/PageSubArea/GetFirstPageAdvAndNews.api?t=201943018242640779',
+          responseType: 'json',
+          success: function (response) {
+            _this.bannerResult = response.data
+
+          },
+          fail: function (err, code) {
+
+          }
+        })
+
+
+
+      },
+      fail: function (err, code) {
+
+      }
+    })
+
+
+
+  },
+  chocieNav(index) {
+    this.navIndex = index;
+  }
+}
+</script>
+
+<style lang="less">
+.demo-page {
+  flex-direction: column;
+  .demo-header {
+    width: 100%;
+    height: 106px;
+    background-color: #1c2635;
+    align-items: center;
+    .logo {
+      width: 140px;
+      height: 44px;
+      margin-left: 25px;
+      img {
+        width: 100%;
+        height: 100%;
+      }
+    }
+    .nav {
+      height: 100%;
+      flex: 1;
+    }
+    .list {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-around;
+      width: 100%;
+      height: 100%;
+      .list-item {
+        height: 100%;
+        text {
+          color: #bbb;
+        }
+      }
+      .list-item-active {
+        text {
+          color: #fff;
+          font-weight: bold;
+        }
+        border-bottom-color: #fff;
+        border-bottom-width: 4px;
+      }
+    }
+    .user-info {
+      width: 60px;
+      height: 44px;
+      margin: 0 25px;
+    }
+  }
+  .search {
+    width: 100%;
+    height: 120px;
+    padding: 18px 36px;
+    background-color: #f6f6f6;
+    border-bottom-color: #d8d8d8;
+    border-bottom-width: 1px;
+    .location {
+      margin-right: 36px;
+      align-items: center;
+      text {
+        color: #333;
+      }
+      image {
+        width: 30px;
+        height: 30px;
+      }
+    }
+    .search-input {
+      flex: 1;
+      border-radius: 20px;
+      border: 1px solid #bbb;
+      background-color: #fff;
+      align-items: center;
+      padding-left: 20px;
+      image {
+        width: 40px;
+        height: 40px;
+        margin-right: 5px;
+      }
+    }
+  }
+  .movie-content {
+    padding: 0 36px;
+    flex-direction: column;
+    border-bottom-color: #d8d8d8;
+    border-bottom-width: 1px;
+    .movie-title {
+      height: 84px;
+      text {
+        color: #000;
+      }
+    }
+    swiper {
+      width: 100%;
+      height: 320px;
+      list {
+        width: max-content;
+        height: 100%;
+        flex-direction: row;
+        list-item {
+          width: 156px;
+          height: 100%;
+          flex-direction: column;
+          overflow: hidden;
+          margin-right: 15px;
+          image {
+            width: 100%;
+            height: 232px;
+          }
+          text {
+            font-size: 24px;
+            text-align: center;
+          }
+        }
+      }
+    }
+  }
+  .banner {
+    width: 100%;
+    height: 375px;
+    list {
+      flex-direction: row;
+      list-item {
+        width: 750px;
+        height: 100%;
+        image {
+          width: 100%;
+          height: 100%;
+        }
+      }
+    }
+  }
+}
+</style>
